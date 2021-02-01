@@ -1,0 +1,4 @@
+SRC += muse.c
+DYNAMIC_MACRO_ENABLE = yes
+BACKLIGHT_ENABLE = yes
+AUDIO_ENABLE = yes
