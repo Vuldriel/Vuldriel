@@ -17,80 +17,25 @@
 #include QMK_KEYBOARD_H
 #include "muse.h"
 
-bool is_alt_tab_active = false;
-uint16_t alt_tab_timer = 0;
-
-enum planck_layers {
+enum preonic_layers {
   _QWERTY,
+  _PLOVER,
   _LOWER,
   _RAISE,
-  _PLOVER,
   _ADJUST
 };
 
-enum planck_keycodes {
+enum preonic_keycodes {
   QWERTY = SAFE_RANGE,
   PLOVER,
+  LOWER,
+  RAISE,
   BACKLIT,
-  EXT_PLV,
-  CTRLA, 
-  ALT_TAB, 
-  CTRLC, 
-  CTRLV, 
-  CTRLE, 
-  ALTF4,
-  CTRLW, 
-  CTRLTAB,
-  GIRAFFACT
+  GIRAFFACT,
+  GIRAFF,
+  FFACT,
+  EXT_PLV
 };
-
-typedef struct {
-  bool is_press_action;
-  int state;
-} tap;
-
-enum {
-  SINGLE_TAP = 1,
-  SINGLE_HOLD = 2
-};
-
-//tap dance enums
-enum {
-  X_ONE = 1,
-  X_TWO = 2,
-  X_THR = 3,
-  X_FOR = 4,
-  X_FIV = 5,
-  X_SIX = 6,
-  X_SEV = 7,
-  X_EIG = 8,
-  X_NIN = 9,
-  X_ZED = 0
-};
-
-int cur_dance (qk_tap_dance_state_t *state);
-
-//for the x tap dance. Put it here so it can be used in any keymap
-void one_finished (qk_tap_dance_state_t *state, void *user_data);
-void one_reset (qk_tap_dance_state_t *state, void *user_data);
-void two_finished (qk_tap_dance_state_t *state, void *user_data);
-void two_reset (qk_tap_dance_state_t *state, void *user_data);
-void thr_finished (qk_tap_dance_state_t *state, void *user_data);
-void thr_reset (qk_tap_dance_state_t *state, void *user_data);
-void for_finished (qk_tap_dance_state_t *state, void *user_data);
-void for_reset (qk_tap_dance_state_t *state, void *user_data);
-void fiv_finished (qk_tap_dance_state_t *state, void *user_data);
-void fiv_reset (qk_tap_dance_state_t *state, void *user_data);
-void six_finished (qk_tap_dance_state_t *state, void *user_data);
-void six_reset (qk_tap_dance_state_t *state, void *user_data);
-void sev_finished (qk_tap_dance_state_t *state, void *user_data);
-void sev_reset (qk_tap_dance_state_t *state, void *user_data);
-void eig_finished (qk_tap_dance_state_t *state, void *user_data);
-void eig_reset (qk_tap_dance_state_t *state, void *user_data);
-void nin_finished (qk_tap_dance_state_t *state, void *user_data);
-void nin_reset (qk_tap_dance_state_t *state, void *user_data);
-void zed_finished (qk_tap_dance_state_t *state, void *user_data);
-void zed_reset (qk_tap_dance_state_t *state, void *user_data);
 
 #define LOWER MO(_LOWER)
 #define RAISE MO(_RAISE)
@@ -99,80 +44,92 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* Qwerty
  * ,-----------------------------------------------------------------------------------.
- * | PLAY |   Q  |   W  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  | Bksp |
+ * |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  |   `  | Del  |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Esc  |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |  "   |
+ * | Esc  |   Q  |   W  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  | Bksp |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * | Tab  |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |  "   |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * | Caps |   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |Enter |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Tab  |   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |Enter |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |Shift | Ctrl | Alt  | GUI  |Lower |    Space    |Raise | Left | Down |  Up  |Right |
+ * | Shift| Ctrl | Alt  | GUI  |Lower |    Space    |Raise | Left | Down |  Up  |Right |
  * `-----------------------------------------------------------------------------------'
  */
-[_QWERTY] = LAYOUT_planck_grid(
-    KC_MPLY, KC_Q,    KC_W,    KC_E,    KC_R,  KC_T,   KC_Y,   KC_U,  KC_I,    KC_O,    KC_P,    KC_BSPC,
-    KC_ESC,  KC_A,    KC_S,    KC_D,    KC_F,  KC_G,   KC_H,   KC_J,  KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-    KC_TAB,  KC_Z,    KC_X,    KC_C,    KC_V,  KC_B,   KC_N,   KC_M,  KC_COMM, KC_DOT,  KC_SLSH, KC_ENT ,
-    KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI, LOWER, KC_SPC, KC_SPC, RAISE, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT
-),
-
-
-/* Lower
- * ,-----------------------------------------------------------------------------------.
- * |   `  |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  | Bksp |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Del  |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |   -  |   =  |   [  |   ]  |  \   |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |RGBTog|NumLck|Insert| Play |REnter|
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |RShift|RCtrl | Ralt | RGUI |      |             |      | Prev | Vol- | Vol+ | Next |
- * `-----------------------------------------------------------------------------------'
- */
-[_LOWER] = LAYOUT_planck_grid(
-    KC_GRV,  TD(X_ONE), TD(X_TWO), TD(X_THR), TD(X_FOR), TD(X_FIV), TD(X_SIX), TD(X_SEV), TD(X_EIG), TD(X_NIN), TD(X_ZED), KC_BSPC,
-    KC_DEL,  KC_F1,     KC_F2,     KC_F3,     KC_F4,     KC_F5,     KC_F6,     KC_MINS,   KC_EQL,    KC_LBRC,   KC_RBRC,   KC_BSLS,
-    _______, KC_F7,     KC_F8,     KC_F9,     KC_F10,    KC_F11,    KC_F12,    KC_CAPS,   KC_NLCK,   KC_INS,    KC_CALC,   KC_PENT,
-    KC_RSFT, KC_RCTL,   KC_RALT,   KC_RGUI,   _______,   _______,   _______,   _______,   KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT
-),
-
-/* Raise
- * ,-----------------------------------------------------------------------------------.
- * |   ~  |   !  |   @  |   #  |   $  |   %  |   ^  |   &  |   *  |   (  |   )  | Bksp |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Del  | Left | Down |  Up  |Right |CtrlW |CtrlTb|   _  |   +  |   {  |   }  |  |   |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |LCtrl |CtrlA |AltTab|CtrlC |CtrlV |CtrlE |ALTF4 |RGBMod|Scroll|Print | Menu |REnter|
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |RShift|RCtrl | Ralt | RGUI |      |             |      | Home |Pg Up |Pg Dn | End  |
- * `-----------------------------------------------------------------------------------'
- */
-[_RAISE] = LAYOUT_planck_grid(
-    KC_TILD, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,   KC_PERC, KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
-    KC_DEL,  KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT, CTRLW,   CTRLTAB, KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE,
-    KC_LCTL, CTRLA,   ALT_TAB, CTRLC,   CTRLV,    CTRLE,   ALTF4,   KC_CAPS, KC_SLCK, KC_PSCR, KC_APP,  KC_PENT,
-    KC_RSFT, KC_RCTL, KC_RALT, KC_RGUI, _______,  _______, _______, _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END
+[_QWERTY] = LAYOUT_preonic_grid(
+ KC_1,    KC_2,    KC_3,    KC_4,    KC_5,  KC_6,   KC_7,   KC_8,  KC_9,    KC_0,    KC_GRV,  KC_DEL, 
+ KC_ESC,  KC_Q,    KC_W,    KC_E,    KC_R,  KC_T,   KC_Y,   KC_U,  KC_I,    KC_O,    KC_P,    KC_BSPC, 
+ KC_TAB,  KC_A,    KC_S,    KC_D,    KC_F,  KC_G,   KC_H,   KC_J,  KC_K,    KC_L,    KC_SCLN, KC_QUOT, 
+ KC_CAPS, KC_Z,    KC_X,    KC_C,    KC_V,  KC_B,   KC_N,   KC_M,  KC_COMM, KC_DOT,  KC_SLSH, KC_ENT, 
+ KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI, LOWER, KC_SPC, KC_SPC, RAISE, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT
 ),
 
 /* Plover layer (http://opensteno.org)
  * ,-----------------------------------------------------------------------------------.
+ * |      |      |      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
  * |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      |   A  |   R  |   S  |   T  |   *  |   *  |   N  |   E  |   I  |   O  |  "   |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |   Z  |   X  |   C  |   V  |   *  |   *  |   M  |   ,  |   .  |   /  |Enter |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      |   S  |   T  |   P  |   H  |   *  |   *  |   F  |   P  |   L  |   T  |   D  |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      |   S  |   K  |   W  |   R  |   *  |   *  |   R  |   B  |   G  |   S  |   Z  |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Exit |      |      |   A  |   O  |             |   E  |   U  |      |      |      |
+ * | Exit |      |      |   A  |   O  |    Space    |   E  |   U  |      |      |      |
  * `-----------------------------------------------------------------------------------'
  */
-[_PLOVER] = LAYOUT_planck_grid(
-    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1   ,
-    XXXXXXX, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC,
-    XXXXXXX, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-    EXT_PLV, XXXXXXX, XXXXXXX, KC_C,    KC_V,    XXXXXXX, XXXXXXX, KC_N,    KC_M,    XXXXXXX, XXXXXXX, XXXXXXX
+[_PLOVER] = LAYOUT_preonic_grid(
+  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+  KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_SCLN, KC_DEL,
+  XXXXXXX, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC,
+  XXXXXXX, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+  EXT_PLV, XXXXXXX, XXXXXXX, KC_C,    KC_V,    XXXXXXX, XXXXXXX, KC_N,    KC_M,    XXXXXXX, XXXXXXX, XXXXXXX
+),
+
+/* Lower
+ * ,-----------------------------------------------------------------------------------.
+ * |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |  F7  |  F8  |  F9  | F10  | F11  | F12  |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |      |      |      |      | Bksp |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * | Del  |      |      |      |      |      |      |   _  |   +  |   {  |   }  |  |   |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |RShift|RCtrl | Ralt | RGUI |      |             |      | Home | PgDn | PgUp | End  |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_LOWER] = LAYOUT_preonic_grid(
+ KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, 
+ KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_BSPC, 
+ KC_DEL,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_BSLS, 
+ KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, 
+ KC_RSFT, KC_RCTL, KC_RALT, KC_RGUI, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_HOME, KC_PGDN, KC_PGUP, KC_END
+),
+
+/* Raise
+ * ,-----------------------------------------------------------------------------------.
+ * |Print | Play | Menu |Scroll|NumLck|Insert|Scren+|Scren-| BL+  | BL-  |RGBMod|RGBTog|
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |      |      |      |      | Bksp |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * | Del  |      |      |      |      |      |      |   _  |   +  |   {  |   }  |  |   |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |RShift|RCtrl | RAlt | RGUI |      |             |      | Next | Vol- | Vol+ | Play |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_RAISE] = LAYOUT_preonic_grid(
+  KC_PSCR, KC_MPLY, KC_NLCK, KC_SLCK, KC_APP,  KC_INS,  KC_BRID,  KC_BRIU, BL_DEC,  BL_INC,  RGB_MOD, RGB_TOG, 
+  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_BSPC, 
+  KC_DEL,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE, 
+  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, 
+  KC_RSFT, KC_RCTL, KC_RALT, KC_RGUI, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT
 ),
 
 /* Adjust (Lower + Raise)
- *                      v------------------------RGB CONTROL--------------------v
  * ,-----------------------------------------------------------------------------------.
+ * |  F13 |  F14 |  F15 |  F16 |  F17 |  F18 |  F19 |  F20 |  F21 |  F22 |  F23 |  F24 |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
  * |Reset | Debug| Hue+ | Hue- | Sat+ | Sat- | Bri+ | Bri- |Mode +|RGBTog|Plover|Sleep |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
  * |BL Bth|MouseL|MouseD|MouseU|MouseR|Dacro1|Dacro2|Mouse1|Mouse2|Mouse3|Mouse4| LOCK |
@@ -182,201 +139,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |BL Tog|MUSmod|AudTog|Clicky|      |             |      |GIRAFF|Macro2|Macro3|Macro4|
  * `-----------------------------------------------------------------------------------'
  */
-[_ADJUST] = LAYOUT_planck_grid(
-    RESET,   DEBUG,   RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD,         RGB_VAI,         RGB_VAD, RGB_MODE_FORWARD, RGB_TOG, PLOVER,  KC_SLEP,
-    BL_BRTG, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, DYN_MACRO_PLAY1, DYN_MACRO_PLAY2, KC_BTN1, KC_BTN2,          KC_BTN3, KC_BTN4, KC_LOCK,
-    BL_STEP, CK_DOWN, CK_UP,   MU_ON,   MU_OFF,  DYN_REC_START1,  DYN_REC_START2,  KC_WH_L, KC_WH_D,          KC_WH_U, KC_WH_R, OUT_AUTO,
-    BL_TOGG, MU_MOD,  AU_TOG,  CK_TOGG, _______, _______,         _______,         _______, GIRAFFACT,        XXXXXXX, XXXXXXX, XXXXXXX
+[_ADJUST] = LAYOUT_preonic_grid(
+ KC_F13,  KC_F14,  KC_F15,  KC_F16,  KC_F17,  KC_F18,          KC_F19,          KC_F20,  KC_F21,           KC_F22,  KC_F23,  KC_F24, 
+ RESET,   DEBUG,   RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD,         RGB_VAI,         RGB_VAD, RGB_MODE_FORWARD, RGB_TOG, PLOVER,  KC_SLEP,
+ BL_BRTG, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, DYN_MACRO_PLAY1, DYN_MACRO_PLAY2, KC_BTN1, KC_BTN2,          KC_BTN3, KC_BTN4, KC_LOCK,
+ BL_STEP, CK_DOWN, CK_UP,   MU_ON,   MU_OFF,  DYN_REC_START1,  DYN_REC_START2,  KC_WH_L, KC_WH_D,          KC_WH_U, KC_WH_R, OUT_AUTO,
+ BL_TOGG, MU_MOD,  AU_TOG,  CK_TOGG, _______, _______,         _______,         _______, GIRAFFACT,        GIRAFF,  FFACT,   XXXXXXX
 )
 
-};
-
-int cur_dance (qk_tap_dance_state_t *state) {
-  if (state->count == 1) {
-    if (state->interrupted || !state->pressed)  return SINGLE_TAP;
-    //key has not been interrupted, but they key is still held. Means you want to send a 'HOLD'.
-    else return SINGLE_HOLD;
-  } 
-  else return 8; //magic number. At some point this method will expand to work for more presses
-}
-
-//instanalize an instance of 'tap' for the 'x' tap dance.
-static tap xtap_state = {
-  .is_press_action = true,
-  .state = 0
-};
-
-void one_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_1); break;
-    case SINGLE_HOLD: register_code(KC_P1); break;
-  }
-}
-
-void one_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_1); break;
-    case SINGLE_HOLD: unregister_code(KC_P1); break;
-  }
-  xtap_state.state = 0;
-}
-
-void two_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_2); break;
-    case SINGLE_HOLD: register_code(KC_P2); break;
-  }
-}
-
-void two_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_2); break;
-    case SINGLE_HOLD: unregister_code(KC_P2); break;
-  }
-  xtap_state.state = 0;
-}
-
-void thr_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_3); break;
-    case SINGLE_HOLD: register_code(KC_P3); break;
-  }
-}
-
-void thr_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_3); break;
-    case SINGLE_HOLD: unregister_code(KC_P3); break;
-  }
-  xtap_state.state = 0;
-}
-
-void for_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_4); break;
-    case SINGLE_HOLD: register_code(KC_P4); break;
-  }
-}
-
-void for_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_4); break;
-    case SINGLE_HOLD: unregister_code(KC_P4); break;
-  }
-  xtap_state.state = 0;
-}
-
-void fiv_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_5); break;
-    case SINGLE_HOLD: register_code(KC_P5); break;
-  }
-}
-
-void fiv_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_5); break;
-    case SINGLE_HOLD: unregister_code(KC_P5); break;
-  }
-  xtap_state.state = 0;
-}
-
-void six_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_6); break;
-    case SINGLE_HOLD: register_code(KC_P6); break;
-  }
-}
-
-void six_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_6); break;
-    case SINGLE_HOLD: unregister_code(KC_P6); break;
-  }
-  xtap_state.state = 0;
-}
-
-void sev_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_7); break;
-    case SINGLE_HOLD: register_code(KC_P7); break;
-  }
-}
-
-void sev_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_7); break;
-    case SINGLE_HOLD: unregister_code(KC_P7); break;
-  }
-  xtap_state.state = 0;
-}
-
-void eig_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_8); break;
-    case SINGLE_HOLD: register_code(KC_P8); break;
-  }
-}
-
-void eig_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_8); break;
-    case SINGLE_HOLD: unregister_code(KC_P8); break;
-  }
-  xtap_state.state = 0;
-}
-
-void nin_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_9); break;
-    case SINGLE_HOLD: register_code(KC_P9); break;
-  }
-}
-
-void nin_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_9); break;
-    case SINGLE_HOLD: unregister_code(KC_P9); break;
-  }
-  xtap_state.state = 0;
-}
-
-void zed_finished (qk_tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_0); break;
-    case SINGLE_HOLD: register_code(KC_P0); break;
-  }
-}
-
-void zed_reset (qk_tap_dance_state_t *state, void *user_data) {
-  switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_0); break;
-    case SINGLE_HOLD: unregister_code(KC_P0); break;
-  }
-  xtap_state.state = 0;
-}
-
-qk_tap_dance_action_t tap_dance_actions[] = {
-  [X_ONE]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,one_finished, one_reset, 100),
-  [X_TWO]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,two_finished, two_reset, 100),
-  [X_THR]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,thr_finished, thr_reset, 100),
-  [X_FOR]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,for_finished, for_reset, 100),
-  [X_FIV]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,fiv_finished, fiv_reset, 100),
-  [X_SIX]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,six_finished, six_reset, 100),
-  [X_SEV]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,sev_finished, sev_reset, 100),
-  [X_EIG]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,eig_finished, eig_reset, 100),
-  [X_NIN]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,nin_finished, nin_reset, 100),
-  [X_ZED]     = ACTION_TAP_DANCE_FN_ADVANCED_TIME(NULL,zed_finished, zed_reset, 100)
 };
 
 #ifdef AUDIO_ENABLE
@@ -385,67 +155,7 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #endif
         
 layer_state_t layer_state_set_user(layer_state_t state) {
-  switch (get_highest_layer(layer_state)) {
-    case _ADJUST:
-        rgb_matrix_set_color(6, RGB_TEAL);
-        rgb_matrix_set_color(5, RGB_TEAL);
-        rgb_matrix_set_color(7, RGB_TEAL);
-        rgb_matrix_set_color(8, RGB_TEAL);
-        rgb_matrix_set_color(4, RGB_GREEN);
-        rgb_matrix_set_color(3, RGB_GREEN);
-        rgb_matrix_set_color(1, RGB_GREEN);
-        rgb_matrix_set_color(2, RGB_GREEN);
-    if (host_keyboard_leds() & (1<<USB_LED_CAPS_LOCK)) {
-        rgb_matrix_set_color(0, RGB_RED);
-    }
-  }
   return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
-}
-
-void rgb_matrix_indicators_user(void) {
-  switch (get_highest_layer(layer_state)) {
-      /* Planck rev6 LED index position:
-       6   5   4   3
-             0
-       7   8   1   2 */
-    case _LOWER:
-        rgb_matrix_set_color(6, RGB_TEAL);
-        rgb_matrix_set_color(5, RGB_TEAL);
-        rgb_matrix_set_color(7, RGB_TEAL);
-        rgb_matrix_set_color(8, RGB_TEAL);
-    if (host_keyboard_leds() & (1<<USB_LED_CAPS_LOCK)) {
-        rgb_matrix_set_color(0, RGB_RED);
-    }
-        break;
-    case _RAISE:
-       rgb_matrix_set_color(4, RGB_GREEN);
-       rgb_matrix_set_color(3, RGB_GREEN);
-       rgb_matrix_set_color(1, RGB_GREEN);
-       rgb_matrix_set_color(2, RGB_GREEN);
-    if (host_keyboard_leds() & (1<<USB_LED_CAPS_LOCK)) {
-        rgb_matrix_set_color(0, RGB_RED);
-    }
-        break;
-    case _PLOVER:
-        rgb_matrix_set_color(6,RGB_GOLD);
-        rgb_matrix_set_color(5,RGB_GOLD);
-        rgb_matrix_set_color(4,RGB_GOLD);
-        rgb_matrix_set_color(3,RGB_GOLD);
-        rgb_matrix_set_color(0,RGB_GOLD);
-        rgb_matrix_set_color(7,RGB_GOLD);
-        rgb_matrix_set_color(8,RGB_GOLD);
-        rgb_matrix_set_color(1,RGB_GOLD);
-        rgb_matrix_set_color(2,RGB_GOLD);
-    if (host_keyboard_leds() & (1<<USB_LED_CAPS_LOCK)) {
-        rgb_matrix_set_color(0, RGB_RED);
-    }
-        break;
-    case _QWERTY:
-    if (host_keyboard_leds() & (1<<USB_LED_CAPS_LOCK)) {
-        rgb_matrix_set_color(0, RGB_RED);
-    }
-        break;
-  }
 }
 
 void shutdown_user() {
@@ -470,64 +180,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       return true;
       break;
-    case CTRLA:
+    case GIRAFF:
       if (record->event.pressed) {
-      	tap_code16(C(KC_A));
+        SEND_STRING("Did you know that if you submerge a giraffe up to the point where its head is the only thing");
       } else {
       }
       return true;
       break;
-    case ALT_TAB:
+    case FFACT:
       if (record->event.pressed) {
-      	if (!is_alt_tab_active) {
-          is_alt_tab_active =  true;
-          register_code(KC_LALT);
-        }
-        alt_tab_timer = timer_read();
-        register_code(KC_TAB);
-      } else {
-        unregister_code(KC_TAB);
-      }
-      return true;
-      break; 
-    case CTRLC:
-      if (record->event.pressed) {
-      	tap_code16(C(KC_C));
-      } else {
-      }
-      return true;
-      break;
-    case CTRLV:
-      if (record->event.pressed) {
-      	tap_code16(C(KC_V));
-      } else {
-      }
-      return true;
-      break;
-    case CTRLE:
-      if (record->event.pressed) {
-      	tap_code16(C(KC_E));
-      } else {
-      }
-      return true;
-      break; 
-    case CTRLW:
-      if (record->event.pressed) {
-      	tap_code16(C(KC_W));
-      } else {
-      }
-      return true;
-      break;
-    case ALTF4:
-      if (record->event.pressed) {
-      	tap_code16(A(KC_F4));
-      } else {
-      }
-      return true;
-      break;
-    case CTRLTAB:
-      if (record->event.pressed) {
-      	tap_code16(C(KC_TAB));
+        SEND_STRING("sticking out of the water, it will still suffocate due to the air-water pressure differential?");
       } else {
       }
       return true;
@@ -587,7 +249,7 @@ uint16_t muse_counter = 0;
 uint8_t muse_offset = 70;
 uint16_t muse_tempo = 50;
 
-void encoder_update_user(uint8_t index, bool clockwise) {
+void encoder_update(bool clockwise) {
   if (muse_mode) {
     if (IS_LAYER_ON(_RAISE)) {
       if (clockwise) {
@@ -603,44 +265,18 @@ void encoder_update_user(uint8_t index, bool clockwise) {
       }
     }
   } else {
-    if (IS_LAYER_ON(_QWERTY)) {
-      if (clockwise) {
-       tap_code(KC_VOLU);
-      } else {
-       tap_code(KC_VOLD);
-      }
-    } else if (IS_LAYER_ON(_PLOVER)) {
-      if (clockwise) {
-       tap_code(KC_VOLU);
-      } else {
-       tap_code(KC_VOLD);
-      }
-    } else if (IS_LAYER_ON(_LOWER)) {
-      if (clockwise) {
-        #ifdef MOUSEKEY_ENABLE
-          tap_code(KC_MS_WH_DOWN);
-        #else
-          tap_code(KC_PGDN);
-        #endif
-      } else {
-        #ifdef MOUSEKEY_ENABLE
-          tap_code(KC_MS_WH_UP);
-        #else
+    if (clockwise) {
+      #ifdef MOUSEKEY_ENABLE
+        tap_code(KC_MS_WH_DOWN);
+      #else
+        tap_code(KC_PGDN);
+      #endif
+    } else {
+      #ifdef MOUSEKEY_ENABLE
+        tap_code(KC_MS_WH_UP);
+      #else
         tap_code(KC_PGUP);
-        #endif
-      }  
-    } else if (IS_LAYER_ON(_RAISE)) {
-      if (clockwise) {
-       tap_code16(C(KC_RIGHT));
-      } else {
-       tap_code16(C(KC_LEFT));
-      }
-    } else if (IS_LAYER_ON(_ADJUST)) {      
-      if (clockwise) {
-       tap_code16(C(S(KC_MS_WH_DOWN)));
-      } else {
-       tap_code16(C(S(KC_MS_WH_UP)));
-      }
+      #endif
     }
   }
 }
@@ -695,12 +331,6 @@ void matrix_scan_user(void) {
         }
     }
 #endif
-    if (is_alt_tab_active) {
-    	if (timer_elapsed(alt_tab_timer) > 1000) {
-    		unregister_code(KC_LALT);
-    		is_alt_tab_active = false;
-    	}
-    }
 }
 
 bool music_mask_user(uint16_t keycode) {
@@ -727,6 +357,11 @@ void matrix_init_user(void)
     set_voice(default_voice);
     startup_user();
     println("Matrix Init");
+  #ifdef RGB_MATRIX_ENABLE
+    // Startup defaults
+    rgb_matrix_sethsv_noeeprom(HSV_RED);
+    rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_REACTIVE_MULTINEXUS);
+#endif
 }
 
 void led_set_user(uint8_t usb_led)
